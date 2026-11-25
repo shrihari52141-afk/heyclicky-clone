@@ -1,1 +1,23 @@
-PFByb2plY3QgU2RrPSJNaWNyb3NvZnQuTkVULlNkayI+CgogIDxQcm9wZXJ0eUdyb3VwPgogICAgPFRhcmdldEZyYW1ld29yaz5uZXQ5LjAtd2luZG93czEwLjAuMTkwNDEuMDwvVGFyZ2V0RnJhbWV3b3JrPgogICAgPE51bGxhYmxlPmVuYWJsZTwvTnVsbGFibGU+CiAgICA8SW1wbGljaXRVc2luZ3M+ZW5hYmxlPC9JbXBsaWNpdFVzaW5ncz4KICAgIDxMYW5nVmVyc2lvbj5sYXRlc3Q8L0xhbmdWZXJzaW9uPgogICAgPCEtLSBVbnNhZmUgYmxvY2tzOiBGcmFtZURpZmZlciBhbmQgdGhlIG1vdXNlLW1hcmtlciBkcmF3aW5nIHJlYWQvd3JpdGUKICAgICAgICAgU29mdHdhcmVCaXRtYXAgcGl4ZWxzIHRocm91Z2ggYSByYXcgcG9pbnRlciAoSU1lbW9yeUJ1ZmZlckJ5dGVBY2Nlc3MpLAogICAgICAgICB0aGUgZG9jdW1lbnRlZCB6ZXJvLWNvcHkgcGF0aCDigJQgc2VlIFNjcmVlbkNhcHR1cmVTZXJ2aWNlLmNzLiAtLT4KICAgIDxBbGxvd1Vuc2FmZUJsb2Nrcz50cnVlPC9BbGxvd1Vuc2FmZUJsb2Nrcz4KICAgIDxQbGF0Zm9ybXM+eDY0PC9QbGF0Zm9ybXM+CiAgPC9Qcm9wZXJ0eUdyb3VwPgoKICA8SXRlbUdyb3VwPgogICAgPCEtLSBUaGUgYWdlbnQgc3lzdGVtIHByb21wdCwgZW1iZWRkZWQgdmVyYmF0aW0gZnJvbSB0aGUgcmVwbyBzb3VyY2Ugb2YKICAgICAgICAgdHJ1dGggKC4uL2FnZW50LXN5c3RlbS1wcm9tcHQubWQpLiBBZ2VudFByb21wdC5jcyBzdHJpcHMgb25seSB0aGUKICAgICAgICAgaGVhZGVyIGFib3ZlIHRoZSBmaXJzdCB0cmlwbGUtZGFzaCBzZXBhcmF0b3IgbGluZTsgdGhlIHByb21wdCB0ZXh0IGl0c2VsZiBpcwogICAgICAgICBzZW50IHRvIHRoZSBtb2RlbCBleGFjdGx5IGFzIHdyaXR0ZW4uIC0tPgogICAgPEVtYmVkZGVkUmVzb3VyY2UgSW5jbHVkZT0iUHJvbXB0c1xhZ2VudC1zeXN0ZW0tcHJvbXB0Lm1kIiAvPgogIDwvSXRlbUdyb3VwPgoKPC9Qcm9qZWN0Pgo=
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <!-- Unsafe blocks: FrameDiffer and the mouse-marker drawing read/write
+         SoftwareBitmap pixels through a raw pointer (IMemoryBufferByteAccess),
+         the documented zero-copy path — see ScreenCaptureService.cs. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Platforms>x64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The agent system prompt, embedded verbatim from the repo source of
+         truth (../agent-system-prompt.md). AgentPrompt.cs strips only the
+         header above the first triple-dash separator line; the prompt text itself is
+         sent to the model exactly as written. -->
+    <EmbeddedResource Include="Prompts\agent-system-prompt.md" />
+  </ItemGroup>
+
+</Project>
