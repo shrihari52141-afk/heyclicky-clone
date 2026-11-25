@@ -1,3 +1,4 @@
+using Windows.Foundation;
 using Windows.Graphics.Imaging;
 
 namespace Clicky.Core;

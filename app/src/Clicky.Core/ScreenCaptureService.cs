@@ -34,7 +34,7 @@ public static class ScreenCaptureService
     {
         var list = new List<MonitorInfo>();
         EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero,
-            (hMonitor, _, ref RECT rect, _) =>
+            (IntPtr hMonitor, IntPtr hdcMonitor, ref RECT rect, IntPtr dwData) =>
             {
                 var info = new MONITORINFO { cbSize = (uint)Marshal.SizeOf<MONITORINFO>() };
                 if (GetMonitorInfo(hMonitor, ref info))
@@ -308,7 +308,7 @@ public static class ScreenCaptureService
         try
         {
             var dxgiGuid = new Guid("54ec77fa-1377-44e6-8c32-88fd5c6c0d9b"); // IDXGIDevice
-            hr = Marshal.QueryInterface(d3d11Device, ref dxgiGuid, out var dxgiDevice);
+            hr = Marshal.QueryInterface(d3d11Device, in dxgiGuid, out var dxgiDevice);
             if (hr < 0 || dxgiDevice == IntPtr.Zero)
             {
                 throw new InvalidOperationException($"Could not get IDXGIDevice from the D3D11 device (HRESULT 0x{hr:X8}).");
