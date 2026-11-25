@@ -1,0 +1,27 @@
+<UserControl
+    x:Class="Clicky.Controls.MascotFace"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Width="32" Height="32">
+    <!-- Our own mascot artwork, drawn fresh with shapes: a small round cream
+         face with dot eyes and a hand-drawn smile. Moods change the eyes,
+         mouth and blush in code-behind (SetMood). Never the reference app's
+         image files. -->
+    <Grid>
+        <Ellipse Fill="#FFF3D6" Stroke="#30333A" StrokeThickness="1.5" />
+        <Ellipse x:Name="EyeLeft" Width="3.5" Height="5" Fill="#1C1E24"
+                 HorizontalAlignment="Left" VerticalAlignment="Top"
+                 Margin="9,11,0,0" />
+        <Ellipse x:Name="EyeRight" Width="3.5" Height="5" Fill="#1C1E24"
+                 HorizontalAlignment="Left" VerticalAlignment="Top"
+                 Margin="19.5,11,0,0" />
+        <Ellipse x:Name="BlushLeft" Width="5" Height="3" Fill="#F2706B" Opacity="0.45"
+                 HorizontalAlignment="Left" VerticalAlignment="Top"
+                 Margin="6,17,0,0" Visibility="Collapsed" />
+        <Ellipse x:Name="BlushRight" Width="5" Height="3" Fill="#F2706B" Opacity="0.45"
+                 HorizontalAlignment="Left" VerticalAlignment="Top"
+                 Margin="21,17,0,0" Visibility="Collapsed" />
+        <Path x:Name="Mouth" Data="M 11,20 Q 16,24 21,20"
+              Stroke="#1C1E24" StrokeThickness="1.8" StrokeLineCap="Round" Fill="Transparent" />
+    </Grid>
+</UserControl>

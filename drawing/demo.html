@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HeyClicky Clone — Drawing Engine Demo</title>
+<!-- Patrick Hand + Barlow are OFL fonts; loaded here from Google Fonts CDN
+     for eyeballing. The app bundles the local copies in fonts/. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; font-family: 'Barlow', system-ui, sans-serif; background: #f4f1ea; color: #30333a; }
+  header { padding: 16px 24px; }
+  h1 { font-family: 'Patrick Hand', cursive; margin: 0 0 4px; font-size: 28px; }
+  p { margin: 4px 0; }
+  .row { display: flex; gap: 16px; padding: 0 24px 24px; flex-wrap: wrap; }
+  .card { background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 12px; }
+  .card h2 { font-family: 'Patrick Hand', cursive; margin: 0 0 8px; font-size: 20px; }
+  svg { display: block; background: #fffdf5; border-radius: 8px; }
+  button { font-family: 'Barlow', sans-serif; font-size: 15px; padding: 8px 16px;
+           border-radius: 8px; border: 1px solid #30333a; background: #ffd84d; cursor: pointer; }
+  button + button { margin-left: 8px; }
+  pre { font-size: 12px; background: #f4f1ea; padding: 10px; border-radius: 8px;
+        max-height: 260px; overflow: auto; margin: 8px 0 0; }
+  .note { font-size: 13px; color: #7e838d; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Drawing engine demo — ring + arrow + highlight + label</h1>
+  <p>Clean-room rebuild of the HeyClicky drawing behaviour (see
+  <code>drawing-visual-spec.md</code>). Same palette, wobble, taper,
+  watercolour wash, highlight 0.72, pen-reveal timing — our own code.</p>
+  <p>
+    <button id="replay">Replay pen-reveal</button>
+    <button id="liveBtn">Live (speech-paced)</button>
+    <button id="determinism">Check determinism</button>
+    <span id="status" class="note"></span>
+  </p>
+</header>
+<div class="row">
+  <div class="card">
+    <h2>Rendered drawing</h2>
+    <div id="stage"></div>
+    <p class="note">Ring (coral, pen), arrow (blue), butter highlight behind the
+    handwritten label, title text in Patrick Hand 24. Pen-reveal runs in
+    drawing order; the highlight swipes in 0.35s.</p>
+  </div>
+  <div class="card">
+    <h2>Schedule (seconds)</h2>
+    <pre id="schedule"></pre>
+    <h2>SVG (first 1200 chars)</h2>
+    <pre id="svgOut"></pre>
+  </div>
+</div>
+<script src="draw-engine.js"></script>
+<script>
+  var D = window.ClickyDraw;
+  var MARKS = [
+    { type: 'circle', x: 260, y: 150, rx: 90, ry: 70, color: 'coral',
+      description: 'ring around the button', id: 'c1' },
+    { type: 'arrow', x1: 90, y1: 330, x2: 210, y2: 215, color: 'blue',
+      description: 'arrow pointing at the ring', id: 'a1' },
+    { type: 'highlight', x: 330, y: 300, w: 190, h: 30,
+      description: 'butter highlight behind the label', id: 'h1' },
+    { type: 'text', x: 336, y: 302, text: 'Click here!', style: 'title',
+      description: 'handwritten label', id: 't1' },
+    { type: 'text', x: 90, y: 360, text: 'the pen draws in order, paced to speech',
+      style: 'body', color: 'grey', id: 't2' }
+  ];
+
+  function show() {
+    var d = D.renderDetailed(MARKS, { width: 800, height: 480 });
+    document.getElementById('stage').innerHTML = d.svg;
+    document.getElementById('schedule').textContent =
+      JSON.stringify(d.marks.map(function (m) {
+        return { id: m.id, type: m.type, start: m.start, dur: m.dur, end: m.end };
+      }), null, 2);
+    document.getElementById('svgOut').textContent = d.svg.slice(0, 1200) + '…';
+    return d;
+  }
+  show();
+
+  document.getElementById('replay').onclick = function () {
+    document.getElementById('stage').innerHTML = '';
+    setTimeout(show, 50); // fresh SVG restarts the CSS pen-reveal
+    document.getElementById('status').textContent = 'replayed at ' + new Date().toLocaleTimeString();
+  };
+
+  document.getElementById('liveBtn').onclick = function () {
+    var stage = document.getElementById('stage');
+    stage.innerHTML = '';
+    var seen = [];
+    var ctl = D.live({ steps: [
+      { marks: [MARKS[0]], say: 'First, look at this button.', duration: 1.6 },
+      { marks: [MARKS[1]], say: 'Follow the arrow.', duration: 1.0 },
+      { marks: [MARKS[2], MARKS[3], MARKS[4]], say: 'Click here to continue.', duration: 1.8 }
+    ] }, {
+      onMark: function () {
+        stage.innerHTML = ctl.svg(); // redraw with marks revealed so far
+        seen.push(1);
+      },
+      onDone: function () {
+        document.getElementById('status').textContent =
+          'live run done — ' + seen.length + ' marks, speech-paced.';
+      }
+    }, { pace: 'speech' });
+    ctl.start();
+  };
+
+  document.getElementById('determinism').onclick = function () {
+    var a = D.render(MARKS), b = D.render(MARKS);
+    document.getElementById('status').textContent =
+      a === b ? 'deterministic: identical input → byte-identical SVG ✓'
+              : 'NON-DETERMINISTIC — investigate!';
+  };
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+[Unit]
+Description=Clicky clone Gemini relay (VM-side, outbound WebSocket to Cloudflare Worker)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Environment=HOME=/home/hatch
+Environment=NODE_USE_ENV_PROXY=1
+Environment=NODE_EXTRA_CA_CERTS=/run/hatch/egress-tls/ca-bundle.pem
+# Egress proxy vars (HTTP_PROXY/HTTPS_PROXY/ALL_PROXY + CA bundle) —
+# same file the other bot services load; without it this VM has no
+# direct outbound route and the relay WebSocket cannot connect.
+EnvironmentFile=/home/hatch/.config/nvidia-rotation/.env
+EnvironmentFile=/home/hatch/.config/clicky-relay/relay.env
+Type=simple
+WorkingDirectory=/home/hatch/workspace/heyclicky-clone/relay
+ExecStart=/usr/bin/node /home/hatch/workspace/heyclicky-clone/relay/relay.mjs
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

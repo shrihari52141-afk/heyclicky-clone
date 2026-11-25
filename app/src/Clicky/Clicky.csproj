@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <Platforms>x64</Platforms>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <AssemblyName>Clicky</AssemblyName>
+    <RootNamespace>Clicky</RootNamespace>
+    <UseWinUI>true</UseWinUI>
+    <!-- Unpackaged WinUI 3 app: runs from the publish folder, no MSIX install, no signing. -->
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.5.1" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="NAudio" Version="2.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Clicky.Core\Clicky.Core.csproj" />
+    <ProjectReference Include="..\Clicky.Drawing\Clicky.Drawing.csproj" />
+    <ProjectReference Include="..\Clicky.Agents\Clicky.Agents.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AppxManifest Include="Package.appxmanifest" />
+    <Content Include="Assets\*.png" />
+    <Content Include="Assets\Fonts\*.ttf" />
+    <!-- backend.json is read at startup from the folder next to Clicky.exe. -->
+    <Content Include="..\..\backend.json">
+      <Link>backend.json</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <!-- Unsafe blocks: FrameDiffer and the mouse-marker drawing read/write
+         SoftwareBitmap pixels through a raw pointer (IMemoryBufferByteAccess),
+         the documented zero-copy path — see ScreenCaptureService.cs. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Platforms>x64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The agent system prompt, embedded verbatim from the repo source of
+         truth (../agent-system-prompt.md). AgentPrompt.cs strips only the
+         header above the first "---" separator; the prompt text itself is
+         sent to the model exactly as written. -->
+    <EmbeddedResource Include="Prompts\agent-system-prompt.md" />
+  </ItemGroup>
+
+</Project>

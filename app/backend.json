@@ -1,0 +1,19 @@
+{
+  // Clicky backend configuration.
+  // The backend is a Cloudflare Worker (built in parallel to this app) that
+  // proxies model calls (vision, STT, talk/TTS) through the Gemini key rotation.
+  //
+  // HOW TO POINT THE APP AT A REAL BACKEND:
+  //   1. Deploy the Worker (see docs/backend-contract.md).
+  //   2. Replace the placeholder URL below with the real Worker URL, e.g.
+  //      "https://clicky-backend.<your-subdomain>.workers.dev"
+  //   3. Rebuild / restart the app. No recompile needed — this file is read
+  //      at startup from the folder next to Clicky.exe.
+  //
+  // Until workerUrl is set to a real URL, Talk and Ask show a plain message
+  // ("Backend not configured yet") instead of failing silently or faking an
+  // answer. There is no credits/paywall screen in this app, ever.
+  "workerUrl": "https://clicky-backend-REPLACE-ME.workers.dev",
+  "requestTimeoutSeconds": 120,
+  "healthCheckTimeoutSeconds": 10
+}

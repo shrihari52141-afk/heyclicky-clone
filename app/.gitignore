@@ -1,0 +1,31 @@
+## Build outputs
+bin/
+obj/
+out/
+publish/
+
+## Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## NuGet
+*.nupkg
+*.snupkg
+packages/
+
+## OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+## Local user settings (never commit a real backend URL with secrets)
+# NOTE: backend.json ships with a placeholder URL only. If you put a real
+# Worker URL with any token in it, keep it out of git.
+
+## Binary assets fetched at build time (see src/Clicky/Assets/Fonts/README.md)
+src/Clicky/Assets/Fonts/*.ttf
+src/Clicky/Assets/*.png

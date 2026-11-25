@@ -1,0 +1,32 @@
+name = "clicky-clone-backend"
+main = "worker.js"
+compatibility_date = "2026-11-25"
+
+[[kv_namespaces]]
+binding = "CLICKY_KV"
+id = "ddcb1a59b55c40d08f669632ec1f8228"
+
+[durable_objects]
+bindings = [{ name = "RELAY_DO", class_name = "RelayDO" }]
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["RelayDO"]
+
+# Secrets (set with `wrangler secret put`, NEVER in this file):
+#   RELAY_SECRET          — shared secret the VM-side relay presents in
+#                           its hello frame when it opens its outbound
+#                           WebSocket to the RelayDO. Set 2026-11-25.
+#                           The Worker never holds a Gemini key.
+#   TOKEN_ENCRYPTION_KEY  — base64 32-byte key for AES-GCM encryption of
+#                           stored OAuth tokens (KV). Set at deploy time.
+#   GOOGLE_CLIENT_ID      — (optional) Google OAuth client ID of the Windows
+#                           app; when set, /auth/google rejects ID tokens
+#                           whose audience is not this client.
+#   GOOGLE_CLIENT_SECRET  — (optional) needed for the Google-provider
+#                           connector OAuth flows (/connect/google-*).
+#   TTS_VOICE             — (optional) default Gemini TTS voice name.
+#   OAUTH_<PROVIDER>_CLIENT_ID / OAUTH_<PROVIDER>_CLIENT_SECRET — per-provider
+#                           OAuth client credentials for /connect flows.
+#                           Until set, /connect/:provider/start returns
+#                           501 not_configured (skeleton only).

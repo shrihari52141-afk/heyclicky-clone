@@ -1,0 +1,93 @@
+name: Build Windows
+
+# Builds the Clicky Windows app on a Windows runner (this repo cannot be
+# built on Linux: WinUI 3 needs the Windows App SDK + Windows SDK).
+# Produces a self-contained win-x64 publish folder, uploads it as an
+# artifact, and (on main) attaches a zip to the rolling m1-latest
+# pre-release so the build can be downloaded without GitHub auth.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 9 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      # Fonts are public OFL releases, downloaded at build time (binary
+      # files are not stored in this repo). If a font is missing, WinUI
+      # falls back to the system font — the build never fails for it.
+      - name: Download OFL fonts (Patrick Hand + Barlow)
+        shell: pwsh
+        run: |
+          $fonts = @{
+            "PatrickHand-Regular.ttf" = "https://raw.githubusercontent.com/google/fonts/main/ofl/patrickhand/PatrickHand-Regular.ttf"
+            "Barlow-Regular.ttf" = "https://raw.githubusercontent.com/google/fonts/main/ofl/barlow/Barlow-Regular.ttf"
+            "Barlow-Medium.ttf" = "https://raw.githubusercontent.com/google/fonts/main/ofl/barlow/Barlow-Medium.ttf"
+            "Barlow-SemiBold.ttf" = "https://raw.githubusercontent.com/google/fonts/main/ofl/barlow/Barlow-SemiBold.ttf"
+          }
+          New-Item -ItemType Directory -Force -Path src/Clicky/Assets/Fonts | Out-Null
+          foreach ($name in $fonts.Keys) {
+            Invoke-WebRequest -Uri $fonts[$name] -OutFile "src/Clicky/Assets/Fonts/$name"
+            if ((Get-Item "src/Clicky/Assets/Fonts/$name").Length -lt 10000) { throw "Font download failed or too small: $name" }
+          }
+
+      # 1x1 placeholder logos (real artwork comes later). The manifest
+      # references these paths, so they must exist before build.
+      - name: Generate placeholder logos
+        shell: pwsh
+        run: |
+          $pngBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8Xw8AAwMCAO+ip1sAAAAASUVORK5CYII="
+          $bytes = [Convert]::FromBase64String($pngBase64)
+          foreach ($name in @("Square150x150Logo.png","Square44x44Logo.png","Wide310x150Logo.png","StoreLogo.png")) {
+            [IO.File]::WriteAllBytes("src/Clicky/Assets/$name", $bytes)
+          }
+
+      - name: Restore
+        run: dotnet restore Clicky.sln
+
+      - name: Build (Release, x64)
+        run: dotnet build Clicky.sln -c Release --no-restore
+
+      - name: Publish self-contained win-x64
+        run: dotnet publish src/Clicky/Clicky.csproj -c Release -r win-x64 --self-contained -o publish --no-build
+
+      - name: Verify published output
+        shell: pwsh
+        run: |
+          Get-ChildItem -Recurse publish | Select-Object FullName, Length | Format-Table -AutoSize
+          if (-not (Test-Path publish/Clicky.exe)) { throw "Clicky.exe missing from publish output" }
+          if (-not (Test-Path publish/backend.json)) { throw "backend.json missing from publish output" }
+
+      - name: Zip published app
+        shell: pwsh
+        run: Compress-Archive -Path publish/* -DestinationPath Clicky-win-x64.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Clicky-win-x64
+          path: publish/
+          if-no-files-found: error
+
+      - name: Attach zip to rolling m1-latest pre-release (main only)
+        if: github.ref == 'refs/heads/main'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view m1-latest --json tagName 2>$null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create m1-latest --prerelease --title "Milestone 1 (latest main)" --notes "Automated build from main. Free and unlimited, no credits."
+          }
+          gh release upload m1-latest Clicky-win-x64.zip --clobber
