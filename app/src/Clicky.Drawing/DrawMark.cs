@@ -58,6 +58,8 @@ public static class Palette
         public const double Pen = 2.8;
         public const double Marker = 8;
         public const double Pencil = 1.8;
-        public const double Brush = 6;
+        // Named Paint (not Brush): C# forbids a member with the same name
+        // as its enclosing type (CS0542).
+        public const double Paint = 6;
     }
 }
