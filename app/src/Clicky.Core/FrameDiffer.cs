@@ -70,7 +70,7 @@ public sealed class FrameDiffer
             using var buffer = source.LockBuffer(BitmapBufferAccessMode.Read);
             using var reference = buffer.CreateReference();
             var desc = buffer.GetPlaneDescription(0);
-            ((IMemoryBufferByteAccess)reference).GetBuffer(out var data, out var capacity);
+            ((ScreenCaptureService.IMemoryBufferByteAccess)reference).GetBuffer(out var data, out var capacity);
 
             var index = 0;
             for (var ty = 0; ty < ThumbHeight; ty++)
