@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
 using Windows.Foundation;
+using Windows.Graphics;
 using WinRT.Interop;
 
 namespace Clicky.Drawing;
@@ -73,7 +74,8 @@ public sealed class DrawingOverlay : Window
         var geometry = new PathGeometry();
         geometry.Figures.Add(figure);
 
-        var path = new Path
+        // Fully qualified: System.IO.Path is also in scope via implicit usings (CS0104).
+        var path = new Microsoft.UI.Xaml.Shapes.Path
         {
             Data = geometry,
             Stroke = new SolidColorBrush(ParseHex(colorHex)),
