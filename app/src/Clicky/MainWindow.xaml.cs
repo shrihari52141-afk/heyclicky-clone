@@ -28,7 +28,9 @@ public sealed partial class MainWindow : Window
         _viewModel = viewModel;
         _hotkey = hotkey;
         InitializeComponent();
-        DataContext = viewModel;
+        // WinUI 3 Window is not a FrameworkElement: it has no DataContext or
+        // Loaded of its own, so both live on the root Grid instead.
+        RootGrid.DataContext = viewModel;
 
         var presenter = AppWindow.Presenter as OverlappedPresenter;
         presenter?.SetBorderAndTitleBar(false, false);
@@ -41,7 +43,7 @@ public sealed partial class MainWindow : Window
         _hotkey.HotkeyPressed += OnHotkeyPressed;
         _viewModel.PropertyChanged += OnViewModelPropertyChanged;
         QuestionBox.KeyDown += OnQuestionKeyDown;
-        Loaded += (_, _) =>
+        RootGrid.Loaded += (_, _) =>
         {
             try
             {

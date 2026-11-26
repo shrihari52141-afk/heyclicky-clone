@@ -81,8 +81,11 @@ public sealed class VoiceService : IDisposable
     public async Task PlayAudioAsync(byte[] audio, CancellationToken ct = default)
     {
         StopPlayback();
-        using var stream = new MemoryStream(audio);
-        using var reader = new MediaFoundationReader(stream);
+        // MediaFoundationReader only accepts a file path (no Stream overload
+        // in the referenced NAudio), so stage the bytes in a temp file.
+        var tmpPath = Path.Combine(Path.GetTempPath(), $"clicky-tts-{Guid.NewGuid():N}.bin");
+        await File.WriteAllBytesAsync(tmpPath, audio, ct).ConfigureAwait(false);
+        using var reader = new MediaFoundationReader(tmpPath);
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         _waveOut = new WaveOutEvent();
         _waveOut.PlaybackStopped += (_, _) => tcs.TrySetResult();
@@ -103,6 +106,7 @@ public sealed class VoiceService : IDisposable
         finally
         {
             IsPlaying = false;
+            try { File.Delete(tmpPath); } catch { /* best effort cleanup */ }
         }
     }
 
