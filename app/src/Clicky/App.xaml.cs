@@ -54,6 +54,28 @@ public partial class App : Application
             Hotkey = hotkey;
 
             var viewModel = Step("create notch view model", () => new NotchViewModel(live, talk, agents, drawing, backend));
+            // DIAGNOSTIC (run #20): the bare-minimum window also failed to
+            // parse in run #19, so the fault is NOT in the window's content.
+            // Split the two remaining causes before creating the window:
+            //  (a) the XAML parser itself is broken on this machine, or
+            //  (b) the compiled window layout is not embedded in the built app.
+            Step("xaml diagnostic", () =>
+            {
+                try
+                {
+                    var xaml = "<Grid xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"><TextBlock Text=\"probe\" /></Grid>";
+                    var parsed = Microsoft.UI.Xaml.Markup.XamlReader.Load(xaml);
+                    StartupLog($"xaml diagnostic: XamlReader.Load ok ({parsed.GetType().FullName})");
+                }
+                catch (Exception probeEx)
+                {
+                    StartupLog($"xaml diagnostic: XamlReader.Load FAILED: {probeEx.GetType().FullName} (HResult 0x{probeEx.HResult:X8}): {probeEx.Message}");
+                }
+                var names = typeof(MainWindow).Assembly.GetManifestResourceNames();
+                var xamlNames = names.Where(n => n.Contains("xaml", StringComparison.OrdinalIgnoreCase) || n.Contains("MainWindow", StringComparison.OrdinalIgnoreCase)).ToArray();
+                StartupLog($"xaml diagnostic: assembly has {names.Length} manifest resources; xaml/MainWindow ones: {(xamlNames.Length == 0 ? "<none>" : string.Join(", ", xamlNames))}");
+                return true;
+            });
             MainWindowInstance = Step("create main window", () => new MainWindow(viewModel, hotkey, live));
             var window = MainWindowInstance!;
             window.Activated += (_, _) => StartupLog("window Activated event fired");
