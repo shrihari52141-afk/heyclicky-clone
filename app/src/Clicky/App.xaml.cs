@@ -74,6 +74,22 @@ public partial class App : Application
                 var names = typeof(MainWindow).Assembly.GetManifestResourceNames();
                 var xamlNames = names.Where(n => n.Contains("xaml", StringComparison.OrdinalIgnoreCase) || n.Contains("MainWindow", StringComparison.OrdinalIgnoreCase)).ToArray();
                 StartupLog($"xaml diagnostic: assembly has {names.Length} manifest resources; xaml/MainWindow ones: {(xamlNames.Length == 0 ? "<none>" : string.Join(", ", xamlNames))}");
+                // Also list the files sitting next to the exe: the compiled
+                // layout (.xbf) lives in resources.pri for WinUI 3, so if
+                // that file is missing from the publish folder, the window
+                // can never load.
+                try
+                {
+                    var files = Directory.GetFiles(AppContext.BaseDirectory)
+                        .Select(Path.GetFileName)
+                        .Where(f => f != null && (f.Contains("pri", StringComparison.OrdinalIgnoreCase) || f.Contains("xbf", StringComparison.OrdinalIgnoreCase) || f.Contains("xaml", StringComparison.OrdinalIgnoreCase) || f.Contains("MainWindow", StringComparison.OrdinalIgnoreCase) || f.Equals("Clicky.dll", StringComparison.OrdinalIgnoreCase)))
+                        .ToArray();
+                    StartupLog($"xaml diagnostic: app-folder files of interest: {(files.Length == 0 ? "<none>" : string.Join(", ", files))}");
+                }
+                catch (Exception listEx)
+                {
+                    StartupLog($"xaml diagnostic: could not list app folder: {listEx.Message}");
+                }
                 return true;
             });
             MainWindowInstance = Step("create main window", () => new MainWindow(viewModel, hotkey, live));
