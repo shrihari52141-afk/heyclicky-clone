@@ -28,6 +28,7 @@
             <SolidColorBrush x:Key="CreamBrush" Color="{StaticResource CreamColor}" />
             <SolidColorBrush x:Key="ButterBrush" Color="{StaticResource ButterColor}" />
             <SolidColorBrush x:Key="CoralBrush" Color="{StaticResource CoralColor}" />
+            <SolidColorBrush x:Key="GreyBrush" Color="{StaticResource GreyColor}" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
