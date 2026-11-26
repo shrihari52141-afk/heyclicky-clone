@@ -4,6 +4,7 @@ using Clicky.Drawing;
 using Clicky.Services;
 using Clicky.ViewModels;
 using Microsoft.UI.Xaml;
+using System.Runtime.InteropServices;
 
 namespace Clicky;
 
@@ -23,36 +24,86 @@ public partial class App : Application
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
-        var settings = AppSettings.Load();
-        var config = BackendConfig.Load();
-        if (!string.IsNullOrWhiteSpace(settings.BackendWorkerUrlOverride))
+        try
         {
-            config = new BackendConfig
+            StartupLog("STARTING Clicky");
+            var settings = Step("load settings", static () => AppSettings.Load());
+            var config = Step("load backend config", static () => BackendConfig.Load());
+            if (!string.IsNullOrWhiteSpace(settings.BackendWorkerUrlOverride))
             {
-                WorkerUrl = settings.BackendWorkerUrlOverride,
-                RequestTimeoutSeconds = config.RequestTimeoutSeconds,
-                HealthCheckTimeoutSeconds = config.HealthCheckTimeoutSeconds,
-            };
+                config = new BackendConfig
+                {
+                    WorkerUrl = settings.BackendWorkerUrlOverride,
+                    RequestTimeoutSeconds = config.RequestTimeoutSeconds,
+                    HealthCheckTimeoutSeconds = config.HealthCheckTimeoutSeconds,
+                };
+            }
+
+            var backend = Step("create backend client", () => new BackendClient(config));
+            Backend = backend;
+
+            var voice = Step("create voice service", static () => new VoiceService());
+            var talk = Step("create talk service", () => new TalkService(backend, voice));
+            var live = Step("create live session", () => new LiveSessionService(voice, talk, settings));
+            LiveSession = live;
+
+            var agents = Step("create agent runner", static () => new AgentRunner());
+            var drawing = Step("create drawing engine", static () => new DrawingEngine());
+
+            var hotkey = Step("create hotkey service", () => new HotkeyService(settings.HotkeyVirtualKey));
+            Hotkey = hotkey;
+
+            var viewModel = Step("create notch view model", () => new NotchViewModel(live, talk, agents, drawing, backend));
+            MainWindowInstance = Step("create main window", () => new MainWindow(viewModel, hotkey, live));
+            var window = MainWindowInstance!;
+            Step("activate main window", () => { window.Activate(); return true; });
+            StartupLog("STARTUP OK — window activated");
         }
-
-        var backend = new BackendClient(config);
-        Backend = backend;
-
-        var voice = new VoiceService();
-        var talk = new TalkService(backend, voice);
-        var live = new LiveSessionService(voice, talk, settings);
-        LiveSession = live;
-
-        var agents = new AgentRunner();
-        var drawing = new DrawingEngine();
-
-        Hotkey = new HotkeyService(settings.HotkeyVirtualKey);
-        var hotkey = Hotkey;
-
-        var viewModel = new NotchViewModel(live, talk, agents, drawing, backend);
-        MainWindowInstance = new MainWindow(viewModel, hotkey, live);
-        MainWindowInstance.Activate();
+        catch (Exception ex)
+        {
+            // Never die silently: log the full error AND show it, so the
+            // user (and the CI smoke test) sees what failed instead of a
+            // process that just vanishes with no window.
+            StartupLog($"STARTUP FAILED: {ex}");
+            try
+            {
+                MessageBoxW(IntPtr.Zero,
+                    $"Clicky could not start.\n\n{ex.GetType().Name}: {ex.Message}\n\nFull details: %LOCALAPPDATA%\\Clicky\\logs\\clicky.log",
+                    "Clicky — startup failed", 0x10);
+            }
+            catch
+            {
+                // Showing the error must never throw.
+            }
+        }
     }
+
+    /// <summary>Startup log: %LOCALAPPDATA%\Clicky\logs\clicky.log. One line per startup step, so a silent exit becomes a pinpointed line — the CI smoke test reads this file, and the user can send it to us.</summary>
+    private static void StartupLog(string message)
+    {
+        try
+        {
+            var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Clicky", "logs");
+            Directory.CreateDirectory(dir);
+            File.AppendAllText(Path.Combine(dir, "clicky.log"),
+                $"[{DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss}] STARTUP: {message}\n");
+        }
+        catch
+        {
+            // Logging must never throw.
+        }
+    }
+
+    private static T Step<T>(string name, Func<T> fn)
+    {
+        StartupLog($"step: {name}");
+        var result = fn();
+        StartupLog($"step ok: {name}");
+        return result;
+    }
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    private static extern int MessageBoxW(IntPtr hWnd, string text, string caption, uint type);
 
     private static void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
     {
