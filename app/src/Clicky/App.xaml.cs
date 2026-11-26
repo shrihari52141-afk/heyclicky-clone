@@ -90,6 +90,20 @@ public partial class App : Application
                 {
                     StartupLog($"xaml diagnostic: could not list app folder: {listEx.Message}");
                 }
+                // Also look for the compiled layout (.xbf) and the PRI config
+                // in the build folders next to the publish folder, so we know
+                // where the resource file should be made from.
+                foreach (var rel in new[] { @"..\src\Clicky\bin\Release\net9.0-windows10.0.19041.0\win-x64", @"..\src\Clicky\bin\x64\Release\net9.0-windows10.0.19041.0\win-x64", @"..\src\Clicky\obj\Release\net9.0-windows10.0.19041.0\win-x64" })
+                {
+                    try
+                    {
+                        var dir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, rel));
+                        if (!Directory.Exists(dir)) { StartupLog($"xaml diagnostic: build folder missing: {rel}"); continue; }
+                        var hits = Directory.GetFiles(dir).Select(Path.GetFileName).Where(f => f != null && (f.EndsWith(".xbf", StringComparison.OrdinalIgnoreCase) || f.Equals("resources.pri", StringComparison.OrdinalIgnoreCase) || f.Equals("priconfig.xml", StringComparison.OrdinalIgnoreCase))).ToArray();
+                        StartupLog($"xaml diagnostic: {rel} -> {(hits.Length == 0 ? "<no xbf/pri/priconfig>" : string.Join(", ", hits))}");
+                    }
+                    catch (Exception ex) { StartupLog($"xaml diagnostic: could not list {rel}: {ex.Message}"); }
+                }
                 return true;
             });
             MainWindowInstance = Step("create main window", () => new MainWindow(viewModel, hotkey, live));
