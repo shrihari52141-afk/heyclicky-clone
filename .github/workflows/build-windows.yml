@@ -12,7 +12,10 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
-
+  
+permissions:
+  contents: write
+  
 jobs:
   build:
     runs-on: windows-latest
@@ -65,6 +68,36 @@ jobs:
     # No --no-build: the Build step outputs to bin\x64\Release, but
       - name: Publish self-contained win-x64
         run: dotnet publish src/Clicky/Clicky.csproj -c Release -r win-x64 --self-contained -o publish
+      - name: Smoke test — launch Clicky.exe
+        shell: pwsh
+        run: |
+          $exe = (Resolve-Path "publish/Clicky.exe").Path
+          $log = "$env:LOCALAPPDATA\Clicky\logs\clicky.log"
+          if (Test-Path $log) { Remove-Item $log }
+          $proc = Start-Process -FilePath $exe -PassThru
+          Start-Sleep -Seconds 20
+          if (Test-Path $log) { Get-Content $log }
+          if ($proc.HasExited) { throw "Clicky.exe exited within 20s (exit code $($proc.ExitCode)) — see startup log above" }
+          if (-not (Select-String -Path $log -Pattern "STARTUP OK" -Quiet)) { throw "Clicky.exe is running but the startup log has no STARTUP OK line" }
+          # Screenshot: visual proof the pill is actually on screen, not
+          # just that the process is alive. Saved for the upload step below.
+          Add-Type -AssemblyName System.Windows.Forms
+          Add-Type -AssemblyName System.Drawing
+          $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+          $bmp = New-Object System.Drawing.Bitmap $bounds.Width, $bounds.Height
+          $g = [System.Drawing.Graphics]::FromImage($bmp)
+          $g.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size)
+          $bmp.Save("smoke-screenshot.png", [System.Drawing.Imaging.ImageFormat]::Png)
+          Write-Host "Screenshot saved: smoke-screenshot.png ($($bounds.Width)x$($bounds.Height))"
+          Stop-Process -Id $proc.Id -Force
+          Write-Host "Smoke test passed: Clicky.exe stayed alive 20s and logged STARTUP OK"
+      - name: Upload smoke-test screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-screenshot
+          path: app/smoke-screenshot.png
+          if-no-files-found: warn
 
       - name: Verify published output
         shell: pwsh
