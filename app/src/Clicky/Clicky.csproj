@@ -14,19 +14,7 @@
     <!-- Unpackaged WinUI 3 app: runs from the publish folder, no MSIX install, no signing. -->
     <WindowsPackageType>None</WindowsPackageType>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-    <!-- The SDK's default Page glob does not deliver the compiled XAML
-         into the published app (resources.pri missing at runtime, so the
-         window can never load), so list the XAML files explicitly. -->
-    <EnableDefaultPageItems>false</EnableDefaultPageItems>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Page Include="App.xaml" />
-    <Page Include="MainWindow.xaml" />
-    <Page Include="Controls\MascotFace.xaml">
-      <Link>Controls\MascotFace.xaml</Link>
-    </Page>
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.5.1" />
