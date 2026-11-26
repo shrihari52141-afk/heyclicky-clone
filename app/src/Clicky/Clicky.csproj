@@ -14,7 +14,19 @@
     <!-- Unpackaged WinUI 3 app: runs from the publish folder, no MSIX install, no signing. -->
     <WindowsPackageType>None</WindowsPackageType>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <!-- The SDK's default Page glob does not deliver the compiled XAML
+         into the published app (resources.pri missing at runtime, so the
+         window can never load), so list the XAML files explicitly. -->
+    <EnableDefaultPageItems>false</EnableDefaultPageItems>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Page Include="App.xaml" />
+    <Page Include="MainWindow.xaml" />
+    <Page Include="Controls\MascotFace.xaml">
+      <Link>Controls\MascotFace.xaml</Link>
+    </Page>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.5.1" />
@@ -38,5 +50,14 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <!-- The solution build generates resources.pri (the app's resource index,
+       which holds the compiled window layout), but dotnet publish does not
+       deliver it to the publish folder, so the window can never load at
+       runtime (XamlParseException). Copy it in after publish when it exists. -->
+  <Target Name="CopyResourcesPri" AfterTargets="Publish">
+    <Message Text="CopyResourcesPri: checking $(MSBuildProjectDirectory)\bin\x64\$(Configuration)\$(TargetFramework)\win-x64\resources.pri" Importance="high" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\bin\x64\$(Configuration)\$(TargetFramework)\win-x64\resources.pri" DestinationFolder="$(PublishDir)" Condition="Exists('$(MSBuildProjectDirectory)\bin\x64\$(Configuration)\$(TargetFramework)\win-x64\resources.pri')" />
+  </Target>
 
 </Project>
