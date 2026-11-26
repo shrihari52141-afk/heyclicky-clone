@@ -56,7 +56,10 @@ public partial class App : Application
             var viewModel = Step("create notch view model", () => new NotchViewModel(live, talk, agents, drawing, backend));
             MainWindowInstance = Step("create main window", () => new MainWindow(viewModel, hotkey, live));
             var window = MainWindowInstance!;
+            window.Activated += (_, _) => StartupLog("window Activated event fired");
             Step("activate main window", () => { window.Activate(); return true; });
+            var aw = window.AppWindow;
+            StartupLog($"window rect: position=({aw.Position.X},{aw.Position.Y}) size=({aw.Size.Width}x{aw.Size.Height})");
             StartupLog("STARTUP OK — window activated");
         }
         catch (Exception ex)
