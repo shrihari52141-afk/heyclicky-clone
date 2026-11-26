@@ -39,21 +39,14 @@
     </Content>
   </ItemGroup>
 
-  <!-- The solution build generates resources.pri (the app's resource index,
-       which holds the compiled window layout), but dotnet publish does not
-       deliver it to the publish folder, so the window can never load at
-       runtime (XamlParseException). Copy it in after publish when it exists. -->
-  <Target Name="CopyResourcesPri" AfterTargets="Publish">
-    <Message Text="CopyResourcesPri: checking $(MSBuildProjectDirectory)\bin\x64\$(Configuration)\$(TargetFramework)\win-x64\resources.pri" Importance="high" />
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\bin\x64\$(Configuration)\$(TargetFramework)\win-x64\resources.pri" DestinationFolder="$(PublishDir)" Condition="Exists('$(MSBuildProjectDirectory)\bin\x64\$(Configuration)\$(TargetFramework)\win-x64\resources.pri')" />
-  </Target>
-
   <!-- dotnet build / publish never generate resources.pri at all for this
        unpackaged app (run #24 proved it exists nowhere), so make it with
        MakePri (Windows SDK) after publish, using the build's own
-       priconfig.xml, and place it next to Clicky.exe. -->
+       priconfig.xml, and place it next to Clicky.exe. The script takes no
+       arguments: it derives every path from its own location, because
+       passing values from MSBuild did not reach it (run #25). -->
   <Target Name="GenerateResourcesPri" AfterTargets="Publish">
-    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\..\..\scripts\make-pri.ps1&quot; -PublishDir &quot;$(PublishDir)&quot; -ProjectDir &quot;$(MSBuildProjectDirectory)&quot; -IntermediateOutputPath &quot;$(IntermediateOutputPath)&quot;" />
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\..\..\scripts\make-pri.ps1&quot;" />
   </Target>
 
 </Project>
