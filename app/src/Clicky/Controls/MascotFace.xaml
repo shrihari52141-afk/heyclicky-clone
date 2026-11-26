@@ -22,6 +22,6 @@
                  HorizontalAlignment="Left" VerticalAlignment="Top"
                  Margin="21,17,0,0" Visibility="Collapsed" />
         <Path x:Name="Mouth" Data="M 11,20 Q 16,24 21,20"
-              Stroke="#1C1E24" StrokeThickness="1.8" StrokeLineCap="Round" Fill="Transparent" />
+              Stroke="#1C1E24" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" />
     </Grid>
 </UserControl>

@@ -17,21 +17,22 @@
       Nothing here is copied from the reference app — own XAML, own artwork,
       public OFL fonts, spec palette values.
     -->
-    <Window.Resources>
-        <local:BoolToVisibilityConverter x:Key="BoolToVisibility" />
-        <Storyboard x:Key="WaveStoryboard" RepeatBehavior="Forever">
-            <DoubleAnimation Storyboard.TargetName="Bar1" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-                             From="0.35" To="1" Duration="0:0:0.6" AutoReverse="True" />
-            <DoubleAnimation Storyboard.TargetName="Bar2" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-                             From="1" To="0.35" Duration="0:0:0.6" BeginTime="0:0:0.2" AutoReverse="True" />
-            <DoubleAnimation Storyboard.TargetName="Bar3" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-                             From="0.5" To="1" Duration="0:0:0.6" BeginTime="0:0:0.1" AutoReverse="True" />
-            <DoubleAnimation Storyboard.TargetName="LiveDot" Storyboard.TargetProperty="Opacity"
-                             From="1" To="0.35" Duration="0:0:0.8" AutoReverse="True" />
-        </Storyboard>
-    </Window.Resources>
-
     <Grid x:Name="RootGrid" Background="Transparent">
+        <!-- WinUI 3 Window has no Resources property, so the notch's own
+             converter + waveform storyboard live on the root Grid instead. -->
+        <Grid.Resources>
+            <local:BoolToVisibilityConverter x:Key="BoolToVisibility" />
+            <Storyboard x:Key="WaveStoryboard" RepeatBehavior="Forever">
+                <DoubleAnimation Storyboard.TargetName="Bar1" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                 From="0.35" To="1" Duration="0:0:0.6" AutoReverse="True" />
+                <DoubleAnimation Storyboard.TargetName="Bar2" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                 From="1" To="0.35" Duration="0:0:0.6" BeginTime="0:0:0.2" AutoReverse="True" />
+                <DoubleAnimation Storyboard.TargetName="Bar3" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                 From="0.5" To="1" Duration="0:0:0.6" BeginTime="0:0:0.1" AutoReverse="True" />
+                <DoubleAnimation Storyboard.TargetName="LiveDot" Storyboard.TargetProperty="Opacity"
+                                 From="1" To="0.35" Duration="0:0:0.8" AutoReverse="True" />
+            </Storyboard>
+        </Grid.Resources>
         <Border CornerRadius="28" Background="{StaticResource InkBrush}">
             <Grid>
                 <Grid.RowDefinitions>

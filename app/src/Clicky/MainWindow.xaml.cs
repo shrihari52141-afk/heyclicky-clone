@@ -45,7 +45,7 @@ public sealed partial class MainWindow : Window
         {
             try
             {
-                ((Storyboard)Resources["WaveStoryboard"]).Begin();
+                ((Storyboard)RootGrid.Resources["WaveStoryboard"]).Begin();
             }
             catch
             {
