@@ -63,7 +63,7 @@ jobs:
         run: dotnet build Clicky.sln -c Release --no-restore
 
     # No --no-build: the Build step outputs to bin\x64\Release, but
-    - name: Publish self-contained win-x64
+      - name: Publish self-contained win-x64
         run: dotnet publish src/Clicky/Clicky.csproj -c Release -r win-x64 --self-contained -o publish
 
       - name: Verify published output
