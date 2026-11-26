@@ -5,7 +5,7 @@
 # unpackaged WinUI 3 app, so the window's compiled XAML (.xbf) is never found
 # at runtime and the app dies with XamlParseException. The .xbf files ARE
 # built (App.xbf, MainWindow.xbf in bin/ and obj/), and the build even writes
-# its own priconfig.xml into the intermediate output — nothing ever runs
+# its own priconfig.xml into the intermediate output - nothing ever runs
 # MakePri on them. This script is that missing step.
 #
 # Takes NO parameters on purpose: passing values from MSBuild kept failing
@@ -24,7 +24,7 @@ $projectDir = Join-Path $appDir "src\Clicky"
 $publishDir = Join-Path $appDir "publish"
 
 if (-not (Test-Path (Join-Path $publishDir "Clicky.exe"))) {
-    throw "make-pri: Clicky.exe not found in $publishDir — publish folder guess is wrong"
+    throw "make-pri: Clicky.exe not found in $publishDir - publish folder guess is wrong"
 }
 
 # Find MakePri in the Windows SDK (version folder varies by runner).
