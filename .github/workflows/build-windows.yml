@@ -57,7 +57,7 @@ jobs:
           }
 
       - name: Restore
-        run: dotnet restore Clicky.sln
+        run: dotnet restore Clicky.sln -r win-x64
 
       - name: Build (Release, x64)
         run: dotnet build Clicky.sln -c Release --no-restore
