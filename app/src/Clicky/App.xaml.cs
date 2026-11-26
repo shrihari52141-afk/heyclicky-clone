@@ -66,8 +66,19 @@ public partial class App : Application
         {
             // Never die silently: log the full error AND show it, so the
             // user (and the CI smoke test) sees what failed instead of a
-            // process that just vanishes with no window.
-            StartupLog($"STARTUP FAILED: {ex}");
+            // process that just vanishes with no window. Log the HResult
+            // and the whole inner-exception chain: the XAML parser gives
+            // no useful message on its own, and guessing the cause from
+            // the type alone already cost us one build (run #17).
+            var detail = $"STARTUP FAILED: {ex.GetType().FullName} (HResult 0x{ex.HResult:X8}): {ex.Message}";
+            var inner = ex.InnerException;
+            while (inner != null)
+            {
+                detail += $"\n  INNER: {inner.GetType().FullName} (HResult 0x{inner.HResult:X8}): {inner.Message}";
+                inner = inner.InnerException;
+            }
+            detail += "\n" + ex.ToString();
+            StartupLog(detail);
             try
             {
                 MessageBoxW(IntPtr.Zero,
